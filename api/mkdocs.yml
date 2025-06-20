@@ -1,0 +1,45 @@
+site_name: Async SQLAlchemy 2 with FastAPI
+
+repo_url: https://github.com/engrogerio/dax
+repo_name: fastapi_async_sqlalchemy2
+
+dev_addr: "127.0.0.1:5000"
+
+theme:
+  name: material
+  features:
+    - navigation.footer
+    - navigation.expand
+    - navigation.prune
+    - content.code.copy
+    - content.code.annotate
+copyright: © 2024-2025 Rogério Silva
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+      minify_css: true
+      minify_js: true
+      htmlmin_opts:
+        remove_comments: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - md_in_html
+  - pymdownx.highlight:
+      linenums: true
+      auto_title: false
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Code Description:
+      - Introduction: explanation/intro.md
+      - Database Setup: explanation/database.md
+      - Models and Schemas: explanation/models.md
+      - Application and Routes: explanation/main.md
+  - License: license.md

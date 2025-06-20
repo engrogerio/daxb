@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invent sistemas - dax</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #070129;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    iframe {
+      border: 2px solid #ffffff;
+      border-radius: 12px;
+      height: 80%;
+    }
+    iframe:nth-child(1) { width: 30%; }
+    iframe:nth-child(2) { width: 60%; }
+    iframe:nth-child(3) { width: 20%; }
+  </style>
+</head>
+<body>
+<div title>
+  <h1 style="color: #0de42a; padding:0px;">Hospital Unimed - Tatuí</h1>
+</div>
+<div class="container" allow="fullscreen;">
+  <iframe src="em_atendimento.html" title="Em atendimento" allow="autoplay;"></iframe>
+  <iframe src="fila.html" title="Próximas consultas" style="height: 50%;"></iframe>
+  <iframe src="/room/panel?customer_id=4ca5e3fc-d91c-4ba9-95ed-e8337a6a5de6" title="Salas"></iframe>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Salas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .table-box {
+      border: 2px solid #1f77b4;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #e7f3ff;
+      color: #1f77b4;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      color: #1f77b4;
+    }
+  </style>
+  
+<script>
+  async function fetchData() {
+   
+      const res = await fetch('/room/panel')
+      credentials: 'include' // important to send cookies
+      }
+
+  fetchData(); // Initial call
+  setInterval(fetchData, 5000); // Poll every 5 seconds
+</script>
+
+<body>
+  
+  <div class="table-box">
+    <h1>Consultórios</h1>
+    <table>
+  <thead>
+    <tr>
+      <th>SALA</th>
+      <th>TICKET</th>
+      <th>PACIENTE</th>
+      <th>MÉDICO</th>
+    </tr>
+  </thead>
+  <tbody>
+   {% for room in rooms %}
+      <tr>
+        <td>{{ room.name }}</td>
+        <td style='color: red'>{{ room.pacient.ticket }}</td>
+        <td>{{ room.pacient.name }}</td>
+        <td>{{ room.doctor_name }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  </div>
+</body>
+</html>
