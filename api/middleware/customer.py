@@ -5,10 +5,11 @@ from urllib.parse import urlencode
 
 class CustomerIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        print('******', request.url.path)
-        if request.url.path == "/cookie/create/":
+        if request.url.path == "/cookie/":
             return await call_next(request)
-
+        if request.scope["type"] != "http":
+            return await call_next(request)
+        
         customer_id = request.cookies.get("customer_id")
         #token = request.query_params.get("token")
 

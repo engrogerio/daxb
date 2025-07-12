@@ -19,14 +19,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, None]:
 app = FastAPI(
     lifespan=lifespan,
     debug=True,
-    root_path="/api",
+    #root_path="/api",
     title=" FastAPI backend for Clinicas dashboard",
     description="",
     version="0.1.0",
     contact={
         "name": "Rogerio Silva",
-        "url": "localhost:5000",
-        "email": "rogerio@inventsis.com",
+        "url": "localhost:8000",
+        "email": "rogerio@inventsis.com.br",
     }
 )
 
@@ -42,7 +42,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(CustomerIDMiddleware)
-    
-if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True, host="0.0.0.0", port=5001)
+#app.add_middleware(CustomerIDMiddleware)
+

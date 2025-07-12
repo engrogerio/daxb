@@ -38,42 +38,55 @@
       color: #1f77b4;
     }
   </style>
-  
-<script>
-  async function fetchData() {
-   
-      const res = await fetch('/room/panel')
-      credentials: 'include' // important to send cookies
-      }
-
-  fetchData(); // Initial call
-  setInterval(fetchData, 5000); // Poll every 5 seconds
-</script>
 
 <body>
   
+  <h1>Consultórios</h1>
   <div class="table-box">
-    <h1>Consultórios</h1>
     <table>
-  <thead>
-    <tr>
-      <th>SALA</th>
-      <th>TICKET</th>
-      <th>PACIENTE</th>
-      <th>MÉDICO</th>
-    </tr>
-  </thead>
-  <tbody>
-   {% for room in rooms %}
-      <tr>
-        <td>{{ room.name }}</td>
-        <td style='color: red'>{{ room.pacient.ticket }}</td>
-        <td>{{ room.pacient.name }}</td>
-        <td>{{ room.doctor_name }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      <thead>
+        <tr>
+          <th>SALA</th>
+          <th>TICKET</th>
+          <th>PACIENTE</th>
+          <th>MÉDICO</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for room in rooms %}
+          <tr>
+            <td>{{ room.name }}</td>
+            <td style='color: red'>{{ room.pacient.ticket }}</td>
+            <td>{{ room.pacient.name }}</td>
+            <td>{{ room.doctor_name }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const evtSource = new EventSource("/room/stream");
+    const tbody = document.querySelector(".table-box table tbody");
+    // defensive check
+    if (!tbody) {
+      console.error("Could not find <tbody> - check your HTML/CSS selector");
+      return;
+    }
+
+    evtSource.onmessage = async (e) => {
+      console.log("🔔 SSE recebido raw:", e);
+        try {
+          const { action } = JSON.parse(e.data);
+          if (action === "refresh") {
+             // força um reload completo da página HTML
++           window.location.reload();
+          }
+    } catch (err) {
+      console.error("Failed to parse SSE data:", err);
+    }
+  };
+});
+</script>
 </body>
 </html>

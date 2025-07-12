@@ -1,21 +1,24 @@
-from fastapi import APIRouter, Response, Query
+from fastapi import APIRouter, Response, Query, Depends, HTTPException
 from fastapi.responses import RedirectResponse
+
+from api.dependencies import customer
+
 
 router = APIRouter(prefix="/cookie")
 
-@router.get("/create/")
+@router.get("/")
 async def set_cookie(
-    response: Response,
     customer_id: str = Query(...),
     redirect_to: str = Query("/room/panel"),
 ):
-    # Replace this with your actual logic to resolve customer_id
-    #customer_id = await resolve_customer_id(redirect_to) #customer_name, token)
-    
+
     if not customer_id:
-        return Response("Invalid customer_id", status_code=403)
-    
+        raise HTTPException(status_code=403, detail="Invalid customer_id")
     response = RedirectResponse(url=redirect_to, status_code=302)
-    
-    response.set_cookie(key="customer_id", value=customer_id, httponly=True)
+    response.set_cookie(
+        key="customer_id", 
+        value=customer_id, 
+        httponly=True,
+        # secure=True, # for https
+    )
     return response
