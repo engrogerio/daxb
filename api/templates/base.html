@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}{% endblock %} — Minha Aplicação</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      background: #ffffff;
+    }
+    .table-box {
+      border: 2px solid #1f77b4;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #e7f3ff;
+      color: #1f77b4;
+    }
+    h1, h3 {
+      color: #1f77b4;
+    }
+    form div {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #1f77b4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #155d8b;
+    }
+    .actions a {
+      color: #1f77b4;
+      text-decoration: none;
+      margin-left: 12px;
+    }
+    .actions a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{% block header %}Minha Aplicação{% endblock %}</h1>
+    <nav>
+      <!-- se tiver um menu, links, etc. -->
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <small>&copy; 2025 Invent Sistemas</small>
+  </footer>
+</body>
+</html>
