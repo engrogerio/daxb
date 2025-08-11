@@ -8,19 +8,73 @@
 
 {% block content %}
 
-    <form action="/room/{{ room.id }}/update-room/" method="post">
-      <input type="hidden" name="id" value="{{ room.id }}" >
+  <label for="room-select">Escolha uma sala para alterar:</label>
+  <select id="room-select">
+    {% for room in all_rooms %}
+      <option value="{{ room.id }}">{{ room.name }}</option>
+    {% endfor %}
+  </select>
+</br></br><hr></br>
+    <form id="room-form" action="/room/{{ all_rooms[0].id }}/update-room/" method="post">
+      <input type="hidden" name="id" id="room-id" value="{{ all_rooms[0].id }}" >
       <label>Name:</label>
-        <input type="text" name="name" value="{{ room.name }}" required><br><br>
+        <input type="text" name="name" id="room-name" value="{{ all_rooms[0].name }}" required><br><br>
 
       <label>Capacity:</label>
-        <input type="number" name="capacity" value="{{ room.capacity }}" required><br><br>
+        <input type="number" name="capacity" id="room-capacity" value="{{ all_rooms[0].capacity }}" required><br><br>
 
       <label>Doctor Name:</label>
-        <input type="text" name="doctor_name" value="{{ room.doctor_name }}" required><br><br>
+        <input type="text" name="doctor_name" id="room-doctor" value="{{ all_rooms[0].doctor_name }}" required><br><br>
 
       <button type="submit">Save</button>
+      <button onclick="history.back()">Concluir</button>
     </form>
+<script>
+    const rooms = {{ all_rooms_json | tojson }};
+
+    const select = document.getElementById('room-select');
+    const form = document.getElementById('room-form');
+    const inputId = document.getElementById('room-id');
+    const inputName = document.getElementById('room-name');
+    const inputCapacity = document.getElementById('room-capacity');
+    const inputDoctor = document.getElementById('room-doctor');
+
+    select.addEventListener('change', () => {
+      const selectedId = select.value;
+      const selectedRoom = rooms.find(r => r.id === selectedId || r.id === parseInt(selectedId));
+      if (selectedRoom) {
+        inputId.value = selectedRoom.id;
+        inputName.value = selectedRoom.name;
+        inputCapacity.value = selectedRoom.capacity;
+        inputDoctor.value = selectedRoom.doctor_name;
+
+        form.action = `/room/${selectedRoom.id}/update-room/`;
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const evtSource = new EventSource("/room/stream");
+    const tbody = document.querySelector(".table-box table tbody");
+    // defensive check
+    if (!tbody) {
+      console.error("Could not find <tbody> - check your HTML/CSS selector");
+      return;
+    }
+
+    evtSource.onmessage = async (e) => {
+      console.log("SSE recebido raw:", e);
+        try {
+          const { action } = JSON.parse(e.data);
+          if (action === "refresh") {
+             // força um reload completo da página HTML
++           window.location.reload();
+          }
+    } catch (err) {
+      console.error("Failed to parse SSE data:", err);
+    }
+  };
+});
+  </script>
 
 {% endblock %}
 

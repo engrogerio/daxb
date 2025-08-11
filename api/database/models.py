@@ -28,7 +28,7 @@ class Room(Base):
     name: Mapped[str] = mapped_column(String(20), nullable=False)
     capacity: Mapped[int] = mapped_column(Integer, nullable=False)
     doctor_name: Mapped[str] = mapped_column(String(20), nullable=False)
-    pacient_id: Mapped[str] = mapped_column(ForeignKey("pacient.id"))
+    pacient_id: Mapped[str] = mapped_column(ForeignKey("pacient.id"), nullable=True)
     pacient = relationship("Pacient", back_populates="room", lazy="selectin") 
 
     def __repr__(self) -> str:

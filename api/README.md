@@ -4,137 +4,204 @@ move models to:
 from sqlalchemy.dialects.postgresql import UUID
 id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 ```
-# Using FastAPI with Async SQLAlchemy 2.0 <!-- omit from toc -->
-
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Local Postgres server using Docker](#local-postgres-server-using-docker)
-  - [Use SQLite instead of PostgreSQL](#use-sqlite-instead-of-postgresql)
-- [License](#license)
-
-## Introduction
-
-I've been using [FastAPI](https://fastapi.tiangolo.com/) and
-[SQLAlchemy](https://www.sqlalchemy.org/) combined with
-[encode/databases](https://www.encode.io/databases/) for a while now.
-
-The `databases` package is a great wrapper around `SQLAlchemy` that allows you
-to use async/await with SQLAlchemy.
-
-However, this does not seem be be actively maintained anymore. So I decided to
-give the new [Async
-SQLAlchemy](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html) a try
-instead.
-
-This repository contains a very simple example how to use FastAPI with Async
-SQLAlchemy 2.0.
-
-## Installation
-
-Clone the repository and install the dependencies. This project uses
-[uv](https://docs.astral.sh/uv/) for dependency management which should be
-installed on your system first.
-
-Install the project dependencies:
-
-```console
-uv sync
-```
-
-Then switch to the virtual environment:
-
-```console
-source .venv/bin/activate
-```
-
-## Usage
-
-Run the server using `Uvicorn`:
-
-```console
-uvicorn main:app --reload
-```
-
-> You can also run the server by just executing the `main.py` file:
->
-> ```console
-> python main.py
-> ```
-
-Then open your browser at [http://localhost:8000](http://localhost:8000).
-
-There is only one endpoint available: `/users`. It returns a list of all users
-for a `GET` request and creates a new user for a `POST` request.
-
-### Local Postgres server using Docker
-
-This example uses [PostgreSQL](https://www.postgresql.org/) as the database. If
-you dont have a local PostgreSQL database running, you can start one with
-[Docker](https://www.docker.com) using the following command:
-
-```console
-docker run \
-  --rm   \
-  --name  postgres \
-  -p 5432:5432 \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=postgres \
-  -d postgres
-```
-
-This will run a PostgreSQL database in a Docker container in the background.
-When you are finished and want to stop the database, run:
-
-```console
-docker stop postgres
-```
-
-If needed, you can connect to the database managment by :
-
-```console
-docker exec -it postgres psql -U postgres
-```
-
-This will allow you to edit or delete the database or records.
-
-### Use SQLite instead of PostgreSQL
-
-For testing purposes, you can also use SQLite instead of PostgreSQL. To do so,
-open the [dp.py](db.py) file and comment out the PostgreSQL database in the
-`DATABASE_URL` environment variable and uncomment the SQLite database.
-
+create customer token:
 ```python
-# DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost/postgres"
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from yourproject.database import get_db
+from yourproject.models import CustomerToken
+
+router = APIRouter()
+
+class AuthPayload(BaseModel):
+    customer_name: str
+    token: str
+    redirect_to: str = "/room/panel"
+
+@router.post("/auth")
+async def authenticate_and_set_cookie(
+    payload: AuthPayload,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(CustomerToken.customer_id).where(
+        CustomerToken.customer_name == payload.customer_name,
+        CustomerToken.token == payload.token,
+    )
+    result = await db.execute(stmt)
+    customer_id = result.scalar_one_or_none()
+
+    if not customer_id:
+        raise HTTPException(status_code=403, detail="Token inválido")
+
+    response = RedirectResponse(url=payload.redirect_to, status_code=302)
+    response.set_cookie(key="customer_id", value=str(customer_id), httponly=True)
+    return response
+
 ```
+# Running
+uv run uvicorn api.main:app --host 0.0.0.0 --port 8000
 
-## License
+# Entidades do sistema
+customer - Multitenant.Modela os clientes do sistema.
 
-This project is licensed under the terms of the MIT license.
+pacient - Modela os pacientes cadastrados no sistema para cada cliente.
 
-```pre
-MIT License
+room - Modela as salas de atendimento de cada cliente.
 
-Copyright (c) 2023-2025 Grant Ramsay
+ticket - Modela os tickets de atendimento de cada paciente atendido em cada cliente.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## State Pattern
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+### Room 
+#### States
+ocupado
 
-```
+livre
+
+manutenção
+
+#### Events
+ocupar
+
+liberar
+
+manutenção
+
+### Paciente
+* Estados
+
+    em espera
+
+    em atendimento:
+
+      Opções abaixo são diferentes "salas":
+
+        em consulta
+        
+        em exame
+
+        em medicação
+
+        em procedimento
+
+        em internação
+
+        em terapia
+
+        em observação
+
+        em transferência
+
+    em alta
+
+### Eventos
+
+* chegar
+
+* cadastrar
+
+* chamar (a uma sala)
+
+* aguardar
+
+* sair
+
+
+### Ticket 
+#### States
+
+em uso
+
+cancelado
+
+finalizado
+
+
+# Interfaces com o usuário
+## Recepcionista da clinica
+1- Check-in de paciente gerando o ticket.
+
+2- Cadastro de sala.
+
+3- Atualização de sala.
+
+## Médico / enfermeiro
+1- Chamada de paciente
+
+2- Atendimento de paciente
+
+3- Redirecionamento de paciente
+
+4- Alta de pacientes
+
+# Possíveis caminhos:
+## Happy paths
+### Simples
+
+1- Recepcionista realiza check-in de paciente.
+
+2- Médico chama paciente para avaliação.
+
+2- Médico atende paciente na sala 01.
+
+3- Médico ajusta urgência no ticket.
+
+4- Médico libera paciente para sala de espera.
+
+5- Médico chama paciente.
+
+6- Médico atende paciente.
+
+7- Médico dá alta do paciente.
+
+### Com multiplos atendimentos e redirecionamento de pacientes
+
+
+1- Recepcionista realiza check-in de paciente.
+
+2- Médico chama paciente para avaliação.
+
+2- Médico atende paciente na sala 01.
+
+3- Médico ajusta urgência no ticket.
+
+4- Médico libera paciente para sala de espera.
+
+5- Médico chama paciente.
+
+6- Médico atende paciente.
+
+7- Médico redireciona paciente para sala 02.
+
+8- Médico libera paciente para sala de espera.
+
+9- Médico chama paciente.
+
+10- Médico atende paciente.
+
+11- Médico libera paciente para sala de espera.
+
+12- Médico atende paciente.
+
+13- Médico dá alta do paciente.
+
+### Com multiplos atendimentos e redirecionamento de pacientes com urgência
+
+1- Recepcionista realiza check-in de paciente.
+
+2- Médico chama paciente para avaliação.
+
+2- Médico atende paciente na sala 01.
+7- Médico dá alta do paciente.
+
+## Caminhos alternativos
+### Manutenção de sala
+2- Recepcionista cadastro de sala.
+3- Recepcionista atualização de sala.
+
+# TODOs
+- [ ] Implementar o sistema de check-in de pacientes.

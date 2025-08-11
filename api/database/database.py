@@ -64,20 +64,20 @@ async def add_sample_data():
     from api.database.models import Customer, Room, Pacient, Ticket
         # adding data to the database:
     customers = [
-        Customer(name="Rogerio", cnpj="20223324000104", customer_id='ffffffff-ffff-ffff-ffff-ffffffffffff'),
-        Customer(name="Gustavo", cnpj="50229669000128", customer_id='ffffffff-ffff-ffff-ffff-ffffffffffff'),
+        Customer(name="invent", cnpj="20223324000104", customer_id='ffffffff-ffff-ffff-ffff-ffffffffffff', id='ffffffff-ffff-ffff-ffff-ffffffffffff'),
+        Customer(name="Gustavo", cnpj="50229669000128", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff', id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
     ]
     
     rooms = [
-        Room(name="Sala 1", capacity=1, doctor_name="Dr. Rogerio"),
-        Room(name="Sala 2", capacity=1, doctor_name="Dr. Gustavo"),
-        Room(name="Sala 3", capacity=1, doctor_name="Dr. Rogerio"),
+        Room(name="Sala 1", capacity=1, doctor_name="Dr. Rogerio", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
+        Room(name="Sala 2", capacity=1, doctor_name="Dr. Gustavo", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
+        Room(name="Sala 3", capacity=1, doctor_name="Dr. Rogerio", customer_id='ffffffff-ffff-ffff-ffff-ffffffffffff'),
     ]
     
     pacients = [
-        Pacient(name="José Joaquim", age=70, gender="Masculino"),
-        Pacient(name="Paulo Henrique", age=99, gender="Masculino"),
-        Pacient(name="Jacinto Santos", age=101, gender="Masculino"),
+        Pacient(name="José Joaquim", age=70, gender="Masculino", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
+        Pacient(name="Paulo Henrique", age=99, gender="Masculino", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
+        Pacient(name="Jacinto Santos", age=101, gender="Masculino", customer_id='aaaaaaaa-ffff-ffff-ffff-ffffffffffff'),
     ]
     
     tickets = [
@@ -104,20 +104,20 @@ async def add_sample_data():
                         select(Customer.id).where(Customer.name == customer.name)
                     )
                     customer_id = customer.scalar_one_or_none()
-
-                    for pacient in pacients:
-                        pacient.customer_id = customer_id
-                        pacient.ticket_id = 'U123'
-                        session.add(pacient)
-                        await session.flush()
-                        await session.refresh(pacient)
-                            
+                    
                     for ticket in tickets:
                         ticket.customer_id = customer_id
                         session.add(ticket)
                         await session.flush()
                         await session.refresh(ticket)
                         
+                    for pacient in pacients:
+                        pacient.customer_id = customer_id
+                        pacient.ticket = ticket
+                        session.add(pacient)
+                        await session.flush()
+                        await session.refresh(pacient)
+                            
                     for room in rooms:
                         room.customer_id = customer_id
                         session.add(room)

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Em Atendimento</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .table-box {
+      border: 2px solid #1f77b4;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      font-size: 25px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    td {
+      background-color: #e7f3ff;
+      color: #1f77b4;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      color: #1f77b4;
+    }
+  </style>
+</head>
+<body>
+  <div class="table-box">
+    <h3>Em Atendimento</h3>
+    <div id="nome-box"></div>
+    <div id="senha-box"></div>
+    <div id="destino-box"></div>
+    <div id="prioridade-box"></div>
+  </div>
+
+  <script>
+    async function loadAtendimentoData() {
+      try {
+        const res = await fetch("http://localhost:5001/api/proximo");
+        const data = await res.json();
+        const fields = Object.keys(data);
+        fields.forEach(field => {
+          const html = `
+            <table>
+              <tbody>
+                <tr>
+                  <td ${field === "SENHA" ? "style='background-color: rgb(0, 255, 34); color:rgb(1, 2, 20);'" : ""}>
+                    ${data[field]}
+                  </td>
+                </tr>
+              </tbody>
+            </table>`;
+          document.getElementById(field.toLowerCase() + "-box").innerHTML = html;
+          // Play voice for the first field
+          if (field === "NOME") {
+            playVoice("Senhor " + data[field] + " comparecer à sala " + data["DESTINO"]);
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao carregar dados de atendimento:", err);
+      }
+    }
+
+    loadAtendimentoData();
+  </script>
+  
+<audio id="audio-player" controls></audio>
+
+<script>
+  async function playVoice(text) {
+    const audio = document.getElementById("audio-player");
+    const url = "http://localhost:5001/api/voz?text=" + encodeURIComponent(text);
+    audio.src = url;
+    audio.load();
+    audio.play().catch(err => console.error("Playback failed:", err));
+  }
+
+</script>
+</body>
+</html>
